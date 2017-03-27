@@ -7,62 +7,12 @@ import sys
 from selenium.webdriver.common.keys import Keys
 from termcolor import colored
 from colored import fg, bg, attr
+import getpass
+import telnetlib
+###########################################################################
 
+################### used functions to be abstracted later #################
 
-
-def v4_check(hi):	
-	counts=0
-	for i in range (0,len(hi.a['href'])):
-		if(hi.a['href'][i]==':'or hi.a['href'][i]=='%'):
- 			counts=counts+1
-	return counts
-
-def ipv6_extractor(hi):
-	start=0
-	end=0
-	coded_pos=0
-	for i in range (0,len(hi.a['href'])):
-		if(hi.a['href'][i]=='['):
- 			start=i
-		if(hi.a['href'][i]==']'):
-			end=i
-		if(hi.a['href'][i]=='/'):
-			coded_pos=i
-	
-	return start,end,coded_pos
-
-def prnt_targets(ip_lst):
-
-	n=len(ip_lst)
-	print ('%s\n%s' % (fg(1), attr(1)))
-	print ('%s  printing ips & ports .. refer to the targets.txt file for processing them with your own flavor ;) %s' % (fg(1), attr('reset')))
-	print ('%s\n%s' % (fg(2), attr(1)))
-	for i in range(0,n):
-		print(i,ip_lst[i],port_lst[i])
-		if(i==0):
-			with open("Desktop/python/output.txt", "w") as text_file:
-    				text_file.write(ip_lst[i]+":"+port_lst[i]+'\n')
-		else:
-			with open("Desktop/python/output.txt", "a") as text_file:
-    				text_file.write(ip_lst[i]+":"+port_lst[i]+'\n')
-	return
-
-
-def auto_open(ip_lst,port_lst):
- 
-	n=len(ip_lst)
-	lnk=[]
-	for i in range(0,n):
-		lnk.append("http://"+ip_lst[i]+":"+port_lst[i])
-		driver = webdriver.Firefox()
-		driver.get(lnk[i])
-		choes=raw_input('open the next cam? y/n ')
-		if(choes=='y'):
-			continue
-		else:
-			print('type y or ctrl+z to exit')
-		
-	return
 def print_logo():
 
 	print ('%s\n%s' % (fg(1), attr(1)))
@@ -80,6 +30,136 @@ def print_logo():
 	print ('%s 	version [0.1.0] %s' % (fg(1), attr('reset')))
  	print "\n"
 	return
+###########################################################################
+
+def scrab(query,driver):
+	ip_lst=[]
+	port_lst=[]
+	
+	for pagenum in range (1,6) :
+		params = urllib.urlencode({'query':query , 'page':pagenum})
+		driver.get("https://www.shodan.io/search?%s" % params)
+		html = driver.page_source
+		soup = BeautifulSoup(html,"lxml")
+		if soup.find("div","msg alert alert-info")!="None":
+			if soup.find("div","msg alert alert-info") in ['No results found']:
+				print "No results found"
+				sys.exit()
+			else:		
+				hi= soup.find("div","ip")
+				if hi is None :		
+					break
+				ip='none'
+				por='none'
+				for count in range (1,11):
+					if hi is None :
+						break	
+						break
+					start=0
+					end=0
+					coded=False
+					if ':' in hi.a['href']:				
+							port=True
+					else:
+						port= False
+			
+					if hi.a['href'][0:5] in ['https']:
+						if port==True and v4_check(hi)==2 :
+							ip, por=hi.a['href'][8:].split(':')
+						elif port==True and v4_check(hi)!=2 :
+							start,end,coded=ipv6_extractor(hi)
+							ip, por=hi.a['href'][end:].split(':')
+							if coded==False:
+								ip=hi.a['href'][start+1:end]
+							else:
+								ip=hi.a['href'][end+2:]
+						else:
+							ip=hi.a['href'][8:]
+					elif hi.a['href'][0:4] in ['http']:
+						if port==True and v4_check(hi)==2:
+							ip, por = hi.a['href'][7:].split(':')
+						elif port==True and v4_check(hi)!=2:
+							start,end,coded=ipv6_extractor(hi)
+							ip, por = hi.a['href'][end:].split(':')
+							if coded==False:
+						
+								ip=hi.a['href'][start+1:end]
+							else:
+							
+								ip=hi.a['href'][end+2:]
+						else:
+							ip=hi.a['href'][7:]
+					elif hi.a['href'][0:1]in ['/'] and v4_check(hi)==0:
+						if port==True:
+							ip, por = hi.a['href'][6:].split(':')
+						else:
+							ip=hi.a['href'][6:]
+					elif hi.a['href'][0:1]in ['/'] and v4_check(hi)!=0:
+						start,end,coded_pos=ipv6_extractor(hi)
+						ip=hi.a['href'][coded_pos+1:]
+					ip_lst.append(str(ip))
+					port_lst.append(str(por)) 
+					hi=hi.findNext("div","ip")
+	return ip_lst,port_lst
+
+###########################################################################
+
+def v4_check(hi):	
+	counts=0
+	for i in range (0,len(hi.a['href'])):
+		if(hi.a['href'][i]==':'or hi.a['href'][i]=='%'):
+ 			counts=counts+1
+	return counts
+###########################################################################
+
+def ipv6_extractor(hi):
+	start=0
+	end=0
+	coded_pos=0
+	for i in range (0,len(hi.a['href'])):
+		if(hi.a['href'][i]=='['):
+ 			start=i
+		if(hi.a['href'][i]==']'):
+			end=i
+		if(hi.a['href'][i]=='/'):
+			coded_pos=i
+	
+	return start,end,coded_pos
+###########################################################################
+
+def prnt_targets(ip_lst):
+
+	n=len(ip_lst)
+	print ('%s\n%s' % (fg(1), attr(1)))
+	print ('%s  printing ips & ports .. refer to the targets.txt file for processing them with your own flavor ;) %s' % (fg(1), attr('reset')))
+	print ('%s\n%s' % (fg(2), attr(1)))
+	for i in range(0,n):
+		print(i,ip_lst[i],port_lst[i])
+		if(i==0):
+			with open("/root/Desktop/python/output.txt", "w") as text_file:
+    				text_file.write(ip_lst[i]+":"+port_lst[i]+'\n')
+		else:
+			with open("/root/Desktop/python/output.txt", "a") as text_file:
+    				text_file.write(ip_lst[i]+":"+port_lst[i]+'\n')
+	return
+###########################################################################
+
+def auto_open(ip_lst,port_lst):
+ 
+	n=len(ip_lst)
+	lnk=[]
+	for i in range(0,n):
+		lnk.append("http://"+ip_lst[i]+":"+port_lst[i])
+		driver = webdriver.Firefox()
+		driver.get(lnk[i])
+		choes=raw_input('open the next cam? y/n ')
+		if(choes=='y'):
+			continue
+		else:
+			print('type y or ctrl+z to exit')
+		
+	return
+###########################################################################
 
 #proxies in this code used to intercept requests and responses to automate the DOM manipulation process
 """
@@ -99,6 +179,8 @@ proxyDict = {
               "http"  : http_proxy
             }
 """
+###########################################################################
+
 def autologin(ip,port,frst):
 	"""
 	
@@ -153,13 +235,40 @@ def autologin(ip,port,frst):
 		driver.close()
 	"""
 	return 
+###########################################################################
+
+def telnet(ch,ip_lst):
+	
+	if(ch=='1'):
+		n=len(ip_lst)
+		for i in range(0,n):
+
+			tn = telnetlib.Telnet(ip_lst[i])
+			tn.set_debuglevel(10)
+			#tn.open(ip_lst[i])
+			#tn.write("whoami\n")
+			print tn.read_some()
+			#tn.close()
+	elif(ch=='2'):
+		print"coming soon :) press ctrl+z to exit"
+	elif(ch=='3'):
+		print"coming soon :) press ctrl+z to exit"
+
+	return 
+
+
+################################ main ###########################################
+
+
 print_logo()
+
 #shodan auto login 
 s = requests.Session()
 name=raw_input("enter your shodan's account username :")
 passwd=raw_input("enter your shodan's account password :")
 pars = { 'username': name, 'password': passwd}
 resp = s.post("https://account.shodan.io/login", data=pars)
+
 #print resp
 driver = webdriver.Firefox()
 #driver = webdriver.PhantomJS()
@@ -179,82 +288,26 @@ driver.get("https://shodan.io")
 #searching for ips and ports on the first 5 pages of the results and storing them in 2 lists (ie:ip&port lists)
 ip_lst=[]
 port_lst=[]
-choice=raw_input("step1 > finding targets ... choose \n 1- webcams (admin/admin)\n 2- custom search \n")
-for pagenum in range (1,6) :
-	if choice in ['2']:
-		if pagenum==1 :
-			query=raw_input('what do you want to search for?')
-		params = urllib.urlencode({'query':query , 'page':pagenum})
-		driver.get("https://www.shodan.io/search?%s" % params)
-	elif choice in ['1']:
-		params = urllib.urlencode({'page':pagenum})
-		driver.get("https://www.shodan.io/search?query=linux+upnp+avtech&%s" % params)
-	html = driver.page_source
-	soup = BeautifulSoup(html,"lxml")
-	if soup.find("div","msg alert alert-info")!="None":
-		if soup.find("div","msg alert alert-info") in ['No results found']:
-			print "No results found"
-			sys.exit()
-		else:		
-			hi= soup.find("div","ip")
-			if hi is None :		
-				break
-			ip='none'
-			por='none'
-			for count in range (1,11):
-				if hi is None :
-					break	
-					break
-				start=0
-				end=0
-				coded=False
-				if ':' in hi.a['href']:				
-						port=True
-				else:
-					port= False
-			
-				if hi.a['href'][0:5] in ['https']:
-					if port==True and v4_check(hi)==2 :
-						ip, por=hi.a['href'][8:].split(':')
-					elif port==True and v4_check(hi)!=2 :
-						start,end,coded=ipv6_extractor(hi)
-						ip, por=hi.a['href'][end:].split(':')
-						if coded==False:
-							ip=hi.a['href'][start+1:end]
-						else:
-							ip=hi.a['href'][end+2:]
-					else:
-						ip=hi.a['href'][8:]
-				elif hi.a['href'][0:4] in ['http']:
-					if port==True and v4_check(hi)==2:
-						ip, por = hi.a['href'][7:].split(':')
-					elif port==True and v4_check(hi)!=2:
-						start,end,coded=ipv6_extractor(hi)
-						ip, por = hi.a['href'][end:].split(':')
-						if coded==False:
-						
-							ip=hi.a['href'][start+1:end]
-						else:
-							
-							ip=hi.a['href'][end+2:]
-					else:
-						ip=hi.a['href'][7:]
-				elif hi.a['href'][0:1]in ['/'] and v4_check(hi)==0:
-					if port==True:
-						ip, por = hi.a['href'][6:].split(':')
-					else:
-						ip=hi.a['href'][6:]
-				elif hi.a['href'][0:1]in ['/'] and v4_check(hi)!=0:
-					start,end,coded_pos=ipv6_extractor(hi)
-					ip=hi.a['href'][coded_pos+1:]
-				ip_lst.append(str(ip))
-				port_lst.append(str(por)) 
-				hi=hi.findNext("div","ip")
+choice=raw_input('\n 1-webcams (admin/admin) \n 2-custom search \n 3-test telnet connectivity "underconstruction" \n')
 
-
-if choice in ['2']:
-	prnt_targets(ip_lst)
-if choice in ['1']:
-	auto_open(ip_lst,port_lst)
 	
+if choice in ['1']:
+	query="linux upnp avtech"
+	ip_lst,port_lst=scrab(query,driver)
+	auto_open(ip_lst,port_lst)
+
+elif choice in ['2']:
+	query=raw_input('what do you want to search for?')
+	ip_lst,port_lst=scrab(query,driver)
+	prnt_targets(ip_lst)
+
+elif choice in ['3']:
+	query="telnet"
+	ip_lst,port_lst=scrab(query,driver)
+	ch=raw_input('\n 1-anonymous login \n 2-dictionary attack "coming soon" \n 3-brute force attack "coming soon" \n')
+	telnet(ch,ip_lst)
+
+
+
+
 
