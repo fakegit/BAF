@@ -16,7 +16,6 @@ what is BAF ?
 
 why BAF ? 
 * because blind attacking makes every vulnerable & exposed  host to the internet a targeted one , hence increases the awareness of potential threats
-* because <a href="https://www.linkedin.com/pulse/kill-bees-close-honey-jars-ahmed-maher">"noisy bees are always better than silent scorpions"</a> 
 * because the best way to prevent knowlege abuse under the hood is sharing it with everyone 
 * because it will always add new to the community and will never be a replica 
 
