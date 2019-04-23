@@ -1,6 +1,7 @@
 # BAF 0.2.0
 
 [![Join the chat at https://gitter.im/BAFcommunity/Lobby](https://badges.gitter.im/BAFcommunity/Lobby.svg)](https://gitter.im/BAFcommunity/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+<br>
 Blind Attacking Framework
 
 * version [0.2.0] --> [(public releases).(beta versions).(bugfixes patches)]
@@ -25,16 +26,6 @@ what is new in the 2nd beta version BAF 0.2.0 ?
 * BAF became totally invisible with no browser head using phantomjs as the webdriver instead of firefox 
 * telnet agent & webcam agent are transfered to vulnerability assessment module so stay tuned for them in the upcoming releases ISA ^_^ 
 
-
- how a pubic release (free/pro version) looks like ? "just an appetizer :) "  
-* it will have modules which contain agents 
-  1- searching module: built on shodan , cynsys (free version) & zmap,zgrap,massscan (pro version) , it's overall aim is to crawl the whole internet searching for vulnerable targets ,....etc
-  2- vulnerability assessment module : which will make sure "on a local machine" that hosts found based on a specific search criteria     are vulnerable . (it will integrate with metasploit and kali linux tools) ,...etc
-  3-exploitation module : it will run predefined/custom exloits against vulnerable targets (also will integrate with metasploit and kali      linux tools) ,...etc
-  4- post exploitation module : it will harvest exploited targets and will either produce a report to be sent to the host owners with   a POC of the exploit or add the host to a private botnet ,....etc
-  
- REMEMBER !! it's just the appetizer :)
-
 how to use BAF ? 
 * fire up a terminal and sudo apt-get update && apt-get upgrade && apt-get dist-upgrade
 * install [ requests , httplib , urllib , time , bs4 "BeautifulSoup" , colored , selenium , sys ] python modules 
@@ -51,18 +42,6 @@ pictures from the framework
 ![alt tag](http://www11.0zz0.com/2018/01/06/04/413129304.png)
 ![alt tag](http://www11.0zz0.com/2018/01/06/04/423115319.png)
 
-
-how to contribute? 
-
-the framework is under development so both testers and contributers are more than welcome to help ... so , 
-* active testers and bug reporters can help us developing the TODO list of the framework & enjoy watching their TODO wishes - next to    their names - come true :) 
-* contributers who provide merged <a href="https://guides.github.com/activities/contributing-to-open-source/">pull requests</a> will be listed below and in the framework contributers section .
-* contributers who provide (continuous - dramatic) <a href="https://guides.github.com/activities/contributing-to-open-source/">merged pull requests</a> will be owners and they will have a share in the pro version profit 
-
-how can a pull request be definitely merged?
-* adds new from the TODO 
-* patces bugs from the TODO 
-
 TODO list(features) in the free version 
 - [x] custom search that exports the targets ips / open ports to text file for custom attacks  
 - [x] serially open admin/admin webcams login pages 
@@ -71,24 +50,4 @@ TODO list(features) in the free version
 - [ ] loging into hosts through common services telnet,ssh,ftp,.. etc of the hosts with default credentials
 - [ ] bruteforcing webcams login pages
 - [ ] automatic search / exploitation of common vulnerabilities on different patforms 
-- [ ] handling exceptions and abstracing the project for being efficiently embedded into hacking enviroments/ pentesting labs 
-- [ ] rest in peace / pull new features from community :)
 
-TODO list(features) in the pro/paid version 
-- [ ] contact shodan creators 
-- [ ] GUI
-- [ ] automated custom fuzzing 
-- [ ] 0-day vulnerabilities mass exploitation 
-- [ ] whatever framework capabilitiy that requires tremendous work and totally engineered & programmed by the owners/paid contributers
-
-TODO list(reported bugs) in free version
-- [x] <a href="https://github.com/engMaher/BAF/blob/master/README.md">NONE yet</a> 
-
-TODO list(reported bugs) in paid version
-- [x] <a href="https://github.com/engMaher/BAF/blob/master/README.md">NONE yet</a> 
-
-list of owners 
-- [x] <a href="https://github.com/engMaher">Ahmed Maher</a>
-
-list of contributers
-- [x] <a href="https://github.com/engMaher/BAF/blob/master/README.md">NONE yet</a>
