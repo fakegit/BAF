@@ -42,7 +42,7 @@ pictures from the framework
 ![alt tag](http://www11.0zz0.com/2018/01/06/04/413129304.png)
 ![alt tag](http://www11.0zz0.com/2018/01/06/04/423115319.png)
 
-TODO list(features) in the free version 
+TODO list 
 - [x] custom search that exports the targets ips / open ports to text file for custom attacks  
 - [x] serially open admin/admin webcams login pages 
 - [x] using phantomjs instead of firefox as a headless browser
